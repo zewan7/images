@@ -19,6 +19,31 @@ router = APIRouter(
 # 确保图片上传目录存在
 os.makedirs(settings.IMAGE_UPLOAD_DIR, exist_ok=True)
 
+# 辅助函数：生成图片URL
+def get_image_url(image, is_thumbnail=True):
+    """根据图片对象生成URL，首页返回缩略图URL，详情页返回原图URL"""
+    # 直接从文件路径中提取日期目录和文件名
+    # 例如：D:\python_codes\images_app\images_app\backend\images\20260109\1q11gv.jpg
+    filepath = image.filepath
+    filename = image.filename
+    
+    # 查找日期目录（8位数字）
+    import re
+    date_match = re.search(r'\\(\d{8})\\', filepath)
+    
+    if date_match:
+        date_dir = date_match.group(1)
+        
+        if is_thumbnail:
+            # 首页返回缩略图URL（日期_1目录）
+            return f"/images/{date_dir}_1/{filename}"
+        else:
+            # 详情页返回原图URL（日期目录）
+            return f"/images/{date_dir}/{filename}"
+    else:
+        # 如果找不到日期目录，返回原始文件名URL
+        return f"/images/{filename}"
+
 # 获取图片列表
 @router.get("/", response_model=List[ImageListResponse])
 @router.get("", response_model=List[ImageListResponse])  # 添加不带斜杠的路由版本
@@ -40,7 +65,7 @@ def get_images(skip: int = 0, limit: int = 100, search: str = None, db: Session 
     # 处理结果，添加URL和用户名
     result = []
     for image, username in images:
-        image.url = f"{settings.IMAGE_BASE_URL}/{image.filename}"
+        image.url = get_image_url(image)
         # 添加username属性
         image.username = username
         result.append(image)
@@ -55,8 +80,8 @@ def get_image(image_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Image not found")
     
     image, username = result
-    # 添加图片URL和用户名
-    image.url = f"{settings.IMAGE_BASE_URL}/{image.filename}"
+    # 添加图片URL和用户名 - 详情页返回原图URL
+    image.url = get_image_url(image, is_thumbnail=False)
     image.username = username
     return image
 
@@ -81,9 +106,14 @@ async def upload_image(
     if file_size > 20 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File size must be less than 20MB")
     
+    # 按日期创建子目录
+    date_dir = datetime.now().strftime("%Y%m%d")  # 使用YYYYMMDD格式，与前端一致
+    upload_dir = os.path.join(settings.IMAGE_UPLOAD_DIR, date_dir)
+    os.makedirs(upload_dir, exist_ok=True)
+    
     # 生成唯一文件名
     filename = f"{uuid.uuid4()}.{file.filename.split('.')[-1]}"
-    filepath = os.path.join(settings.IMAGE_UPLOAD_DIR, filename)
+    filepath = os.path.join(upload_dir, filename)
     
     # 保存文件
     with open(filepath, "wb") as buffer:
@@ -92,6 +122,16 @@ async def upload_image(
     # 获取图片尺寸
     with PILImage.open(filepath) as img:
         width, height = img.size
+    
+    # 生成缩略图
+    thumbnail_dir = os.path.join(settings.IMAGE_UPLOAD_DIR, f"{date_dir}_1")
+    os.makedirs(thumbnail_dir, exist_ok=True)
+    thumbnail_path = os.path.join(thumbnail_dir, filename)
+    
+    with PILImage.open(filepath) as img:
+        # 生成缩略图，保持宽高比，提高尺寸和质量
+        img.thumbnail((500, 500), PILImage.LANCZOS)
+        img.save(thumbnail_path, quality=95)
     
     # 创建图片记录，关联当前用户
     db_image = Image(
@@ -109,7 +149,7 @@ async def upload_image(
     db.refresh(db_image)
     
     # 添加图片URL和用户名
-    db_image.url = f"{settings.IMAGE_BASE_URL}/{db_image.filename}"
+    db_image.url = f"{settings.IMAGE_BASE_URL}/{date_dir}/{db_image.filename}"
     db_image.username = current_user.username  # 添加用户名
     
     return db_image
@@ -124,13 +164,12 @@ def get_my_images(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
         # 处理结果，添加URL和用户名
         result = []
         for image, username in images:
-            image.url = f"{settings.IMAGE_BASE_URL}/{image.filename}"
+            image.url = get_image_url(image)
             # 添加username属性
             image.username = username
             result.append(image)
         return result
     except Exception as e:
-
         raise HTTPException(status_code=500, detail="获取用户图片失败")
 
 # 删除图片（需要认证）
@@ -186,7 +225,7 @@ def update_image_description(
     db.refresh(image)
     
     # 添加图片URL和用户名
-    image.url = f"{settings.IMAGE_BASE_URL}/{image.filename}"
+    image.url = get_image_url(image)
     image.username = current_user.username
     
     return image

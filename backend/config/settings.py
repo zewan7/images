@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "mysql+pymysql://ee:5tgb%TGB@47.109.52.163:3306/images_db"
     
     # 图片存储配置
-    IMAGE_UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "media")
-    IMAGE_BASE_URL: str = "http://localhost:8000/media"
+    IMAGE_UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images")
+    IMAGE_BASE_URL: str = "http://localhost:8888/images"
     
     # 邮件配置（用于邮件验证）
     SMTP_SERVER: str = "smtp.qq.com"

@@ -1,16 +1,56 @@
 import { Link } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
 
 function ImageCard({ image, onClick, onDelete, onEdit, showActions = false }) {
+  const [isVisible, setIsVisible] = useState(false)
+  const imgRef = useRef(null)
+  const imgElementRef = useRef(null)
+  const [isLoaded, setIsLoaded] = useState(false)
+  
+  // 使用Intersection Observer实现图片懒加载
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.unobserve(imgRef.current)
+        }
+      },
+      { threshold: 0.1 }
+    )
+    
+    if (imgRef.current) {
+      observer.observe(imgRef.current)
+    }
+    
+    return () => {
+      if (imgRef.current) {
+        observer.unobserve(imgRef.current)
+      }
+    }
+  }, [])
+  
+  // 生成缩略图URL
+  const getThumbnailUrl = (originalUrl) => {
+    // 将日期目录替换为日期_1目录（缩略图目录）
+    return originalUrl.replace(/\/images\/(\d{8})\//, '/images/$1_1/')
+  }
+  
   // 如果没有提供onClick，则使用默认的Link行为
   const cardContent = (
     <div className="image-card">
-      <div className="image-container">
-        <img 
-          src={image.url} 
-          alt={image.title} 
-          loading="lazy"
-          className="image-thumbnail"
-        />
+      <div className="image-container" ref={imgRef}>
+        {/* 懒加载图片 - 渐进式加载，首页显示缩略图 */}
+        {isVisible && (
+          <img 
+            ref={imgElementRef}
+            src={getThumbnailUrl(image.url)} 
+            alt={image.title} 
+            loading="lazy"
+            className={`image-thumbnail ${isLoaded ? 'loaded' : ''}`}
+            onLoad={() => setIsLoaded(true)}
+          />
+        )}
         
         {/* 操作按钮 */}
         {showActions && (

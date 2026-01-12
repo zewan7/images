@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 function Home() {
   const { user } = useAuth()
   const [images, setImages] = useState([])
+  const [allImages, setAllImages] = useState([]) // 保存所有已加载的图片，用于随机显示
   const [loading, setLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0) // 用于触发图片列表刷新
   const [searchTerm, setSearchTerm] = useState('') // 搜索关键词
@@ -33,10 +34,12 @@ function Home() {
       
       if (isLoadMore) {
         setImages(prevImages => [...prevImages, ...data])
+        setAllImages(prevAllImages => [...prevAllImages, ...data])
         setSkip(prevSkip => prevSkip + limit)
         setHasMore(data.length === limit)
       } else {
         setImages(data)
+        setAllImages(data)
         setSkip(limit)
         setHasMore(data.length === limit)
       }
@@ -94,6 +97,24 @@ function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // 随机显示图片函数
+  const showRandomImages = () => {
+    // 如果有搜索结果，只在搜索结果中随机
+    // 否则从所有已加载图片中随机
+    const sourceImages = searchTerm ? images : allImages;
+    
+    if (sourceImages.length > 0) {
+      // 创建数组副本并随机打乱
+      const shuffledImages = [...sourceImages].sort(() => Math.random() - 0.5);
+      
+      // 保持与当前显示相同数量的图片，确保布局一致
+      setImages(shuffledImages.slice(0, images.length));
+    } else {
+      // 如果当前没有图片，重新加载图片
+      loadImages();
+    }
+  }
+
   return (
     <>
       <div className="home-container">
@@ -129,6 +150,15 @@ function Home() {
                   disabled={loading || isSearching}
                 >
                   {isSearching ? '搜索中...' : '搜索'}
+                </button>
+                <button
+                  type="button"
+                  onClick={showRandomImages}
+                  className="random-button"
+                  disabled={loading}
+                  title="随机显示图片"
+                >
+                  随机
                 </button>
               </div>
             </div>
@@ -351,6 +381,31 @@ function Home() {
         }
         
         .search-button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        
+        /* 随机按钮样式 */
+        .random-button {
+          padding: 15px 25px;
+          background: linear-gradient(135deg, #4a90e2, #357abd);
+          color: white;
+          border: none;
+          border-radius: 25px;
+          margin: 5px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .random-button:hover:not(:disabled) {
+          background: linear-gradient(135deg, #357abd, #2a6099);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+        }
+        
+        .random-button:disabled {
           opacity: 0.6;
           cursor: not-allowed;
         }

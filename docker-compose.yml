@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  backend:
+    image: my-backend:v1
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./backend:/app
+    networks:
+      - app-network
+
+  frontend:
+    image: my-frontend:v1
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html  # 挂载构建产物
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

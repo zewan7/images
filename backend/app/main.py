@@ -27,7 +27,7 @@ app.add_middleware(
 )
 
 # 挂载静态文件服务，用于提供图片访问
-app.mount("/media", StaticFiles(directory=settings.IMAGE_UPLOAD_DIR), name="media")
+app.mount("/images", StaticFiles(directory=settings.IMAGE_UPLOAD_DIR), name="images")
 
 # 注册路由
 app.include_router(images.router, prefix="/api")
