@@ -60,6 +60,14 @@ function Home() {
     loadImages()
   }, [refreshKey])
 
+  // 当搜索词变为空时，重置分页状态
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      // 搜索词为空，重置skip和hasMore，重新加载所有图片
+      loadImages()
+    }
+  }, [searchTerm])
+
   // 图片上传成功后刷新列表
   const handleImageUploaded = () => {
     setRefreshKey(prev => prev + 1)
@@ -69,7 +77,14 @@ function Home() {
   const handleSearch = (e) => {
     e.preventDefault()
     setIsSearching(true)
-    loadImages(searchTerm)
+    // 如果搜索框为空或空字符串，调用和初始加载相同的逻辑，重新加载所有图片
+    // 否则调用带搜索词的loadImages(searchTerm)
+    if (!searchTerm.trim()) {
+      // 调用无参数的loadImages()，重置所有状态，和初始加载逻辑一致
+      loadImages()
+    } else {
+      loadImages(searchTerm)
+    }
   }
 
   // 清除搜索
