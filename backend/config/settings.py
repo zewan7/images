@@ -5,7 +5,7 @@ import os
 class Settings(BaseSettings):
     # 应用配置
     APP_HOST: str = "0.0.0.0"
-    APP_PORT: int = 8888
+    APP_PORT: int = 8301
     DEBUG: bool = True
     SECRET_KEY: str = "your-secret-key-change-this-in-production"  # JWT密钥
     
@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     
     # 图片存储配置
     IMAGE_UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images")
-    IMAGE_BASE_URL: str = "http://localhost:8888/images"
+    IMAGE_BASE_URL: str = "http://localhost:8301/images"
     
     # 邮件配置（用于邮件验证）
     SMTP_SERVER: str = "smtp.qq.com"

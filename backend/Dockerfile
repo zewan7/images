@@ -15,10 +15,10 @@ RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r re
 COPY . .
 
 # 暴露端口
-EXPOSE 8888
+EXPOSE 8301
 
 # 设置环境变量
 ENV PYTHONPATH=/app
 
 # 启动命令
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8888", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8301", "--reload"]
