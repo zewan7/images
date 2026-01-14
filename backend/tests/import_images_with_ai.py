@@ -149,33 +149,35 @@ def import_images(image_dir):
     # 创建数据库会话
     db = SessionLocal()
     
-    try:
-        processed_count = 0
-        
-        # 遍历指定目录下的所有图片
-        for root, dirs, files in os.walk(image_dir):
-            for filename in files:
-                # 过滤图片文件
-                if filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
-                    # 获取文件路径
-                    filepath = os.path.join(root, filename)
-                    
+    processed_count = 0
+    
+    # 遍历指定目录下的所有图片
+    for root, dirs, files in os.walk(image_dir):
+        for filename in files:
+            # 过滤图片文件
+            if filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
+                # 获取文件路径
+                filepath = os.path.join(root, filename)
+                
+                try:
                     # 处理图片
                     if process_image(filepath, db):
+                        # 每张图片处理完成后立即提交事务
+                        db.commit()
                         processed_count += 1
-        
-        # 提交事务
-        db.commit()
-        print(f"\n导入完成！共处理 {processed_count} 张图片")
-        return processed_count
-    except Exception as e:
-        # 回滚事务
-        db.rollback()
-        print(f"导入过程中发生错误: {str(e)}")
-        return 0
-    finally:
-        # 关闭数据库会话
-        db.close()
+                        print(f"图片 {filename} 已成功入库！")
+                except Exception as e:
+                    # 回滚当前事务
+                    db.rollback()
+                    print(f"处理图片 {filename} 失败: {str(e)}")
+                    # 继续处理下一张图片
+                    continue
+    
+    print(f"\n导入完成！共成功处理 {processed_count} 张图片")
+    
+    # 关闭数据库会话
+    db.close()
+    return processed_count
 
 # 命令行入口
 if __name__ == "__main__":
