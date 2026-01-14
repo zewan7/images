@@ -40,17 +40,23 @@ const cache = {
 
 // 带有缓存的fetch函数
 const fetchWithCache = async (url, options = {}) => {
-  // 生成缓存键
-  const cacheKey = `${url}_${JSON.stringify(options)}`
+  // 生成缓存键 - 只基于URL，不包括options，这样不同skip参数的请求会使用不同的缓存键
+  const cacheKey = url
+  
+  // 提取forceRefresh选项，不影响缓存键
+  const { forceRefresh = false } = options
   
   // 检查缓存
   const cachedData = cache.get(cacheKey)
-  if (cachedData && !options.forceRefresh) {
+  if (cachedData && !forceRefresh) {
     return cachedData
   }
   
-  // 实际请求
-  const response = await fetch(url, options)
+  // 实际请求 - 移除forceRefresh选项，避免影响fetch请求
+  const fetchOptions = { ...options }
+  delete fetchOptions.forceRefresh
+  
+  const response = await fetch(url, fetchOptions)
   if (!response.ok) {
     throw new Error(`Failed to fetch: ${response.status}`)
   }
@@ -64,7 +70,7 @@ const fetchWithCache = async (url, options = {}) => {
 }
 
 // 获取图片列表
-export const fetchImages = async (skip = 0, limit = 100, search = '') => {
+export const fetchImages = async (skip = 0, limit = 100, search = '', options = {}) => {
   try {
     // 构建查询参数
     const params = new URLSearchParams()
@@ -75,7 +81,7 @@ export const fetchImages = async (skip = 0, limit = 100, search = '') => {
     }
     
     const url = `${API_BASE_URL}/images?${params.toString()}`
-    return await fetchWithCache(url)
+    return await fetchWithCache(url, options)
   } catch (error) {
     console.error('Error fetching images:', error)
     throw error

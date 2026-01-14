@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import ImageCard from '../components/ImageCard.jsx'
 import { fetchImages } from '../services/api.js'
@@ -6,6 +7,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 
 function Home() {
   const { user } = useAuth()
+  const location = useLocation() // 获取当前路由位置
   const [images, setImages] = useState([])
   const [allImages, setAllImages] = useState([]) // 保存所有已加载的图片，用于随机显示
   const [loading, setLoading] = useState(true)
@@ -15,7 +17,7 @@ function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false) // 控制返回顶部按钮显示
 
   const [loadMoreLoading, setLoadMoreLoading] = useState(false) // 加载更多状态
-  const [hasMore, setHasMore] = useState(true) // 是否还有更多图片
+  const [hasMore, setHasMore] = useState(true) // 初始加载和刷新触发
   const [skip, setSkip] = useState(0) // 当前跳过的图片数量
   const [limit] = useState(40) // 每次加载的图片数量
 
@@ -28,9 +30,12 @@ function Home() {
         setLoadMoreLoading(true)
       } else {
         setLoading(true)
+        // 非加载更多时，从0开始加载，重置所有状态
+        setSkip(0)
       }
       
-      const data = await fetchImages(currentSkip, limit, search)
+      // 所有请求都强制刷新缓存，确保获取最新数据
+      const data = await fetchImages(currentSkip, limit, search, { forceRefresh: true })
       
       if (isLoadMore) {
         setImages(prevImages => [...prevImages, ...data])
@@ -54,6 +59,31 @@ function Home() {
       }
     }
   }
+
+  // 监听路由变化，当用户返回首页时重置状态
+  useEffect(() => {
+    // 当路由变化时，重置所有状态
+    setSkip(0)
+    setHasMore(true)
+    setImages([])
+    setAllImages([])
+    loadImages()
+  }, [location])
+
+  // 监听浏览器返回事件，重置状态
+  useEffect(() => {
+    const handlePopState = () => {
+      // 当用户返回首页时，重置所有状态
+      setSkip(0)
+      setHasMore(true)
+      setImages([])
+      setAllImages([])
+      loadImages()
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   // 初始加载和刷新触发
   useEffect(() => {
