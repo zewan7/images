@@ -31,6 +31,7 @@ class ImageResponse(ImageBase):
 class ImageListResponse(BaseModel):
     id: int
     title: str
+    description: Optional[str] = None  # 添加描述字段
     filename: str
     width: int
     height: int
