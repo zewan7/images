@@ -50,8 +50,9 @@ def get_image_url(image, is_thumbnail=True):
 @router.get("/", response_model=List[ImageListResponse])
 @router.get("", response_model=List[ImageListResponse])  # 添加不带斜杠的路由版本
 def get_images(skip: int = 0, limit: int = 100, search: str = None, db: Session = Depends(get_db)):
-    # 关联用户表，获取用户名
-    query = db.query(Image, User.username).join(User, Image.user_id == User.id)
+    # 关联用户表，获取用户名 - 使用左连接确保所有图片都能返回
+    from sqlalchemy.orm import joinedload
+    query = db.query(Image, User.username).outerjoin(User, Image.user_id == User.id)
     
     # 添加搜索过滤
     if search:
@@ -68,23 +69,23 @@ def get_images(skip: int = 0, limit: int = 100, search: str = None, db: Session 
     result = []
     for image, username in images:
         image.url = get_image_url(image)
-        # 添加username属性
-        image.username = username
+        # 添加username属性，处理可能为None的情况
+        image.username = username or "未知用户"
         result.append(image)
     return result
 
 # 获取单个图片详情
 @router.get("/{image_id}", response_model=ImageResponse)
 def get_image(image_id: int, db: Session = Depends(get_db)):
-    # 关联用户表，获取用户名
-    result = db.query(Image, User.username).join(User, Image.user_id == User.id).filter(Image.id == image_id).first()
+    # 关联用户表，获取用户名 - 使用左连接确保所有图片都能返回
+    result = db.query(Image, User.username).outerjoin(User, Image.user_id == User.id).filter(Image.id == image_id).first()
     if not result:
         raise HTTPException(status_code=404, detail="Image not found")
     
     image, username = result
     # 添加图片URL和用户名 - 详情页返回原图URL
     image.url = get_image_url(image, is_thumbnail=False)
-    image.username = username
+    image.username = username or "未知用户"
     return image
 
 # 上传图片（需要认证）
