@@ -30,7 +30,8 @@ def get_image_url(image, is_thumbnail=True):
     
     # 查找日期目录（8位数字）
     import re
-    date_match = re.search(r'\\(\d{8})\\', filepath)
+    # 匹配两种分隔符：斜杠和反斜杠
+    date_match = re.search(r'[\\/](\d{8})[\\/]', filepath)
     
     if date_match:
         date_dir = date_match.group(1)
