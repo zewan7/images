@@ -26,7 +26,6 @@ Thumbs.db
 logs/
 
 # Build files
-dist/
 build/
 *.egg-info/
 
