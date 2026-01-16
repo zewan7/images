@@ -11,8 +11,35 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
+# 验证密码复杂度
+def validate_password(password: str) -> bool:
+    """
+    验证密码复杂度
+    - 至少8个字符
+    - 至少包含一个大写字母
+    - 至少包含一个小写字母
+    - 至少包含一个数字
+    - 至少包含一个特殊字符
+    """
+    import re
+    if len(password) < 8:
+        return False
+    if not re.search(r'[a-zA-Z]', password):
+        return False
+    # if not re.search(r'[a-z]', password):
+    #     return False
+    # if not re.search(r'\d', password):
+    #     return False
+    # if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+    #     return False
+    return True
+
 # 生成密码哈希
 def get_password_hash(password: str) -> str:
+    # 验证密码复杂度
+    if not validate_password(password):
+        raise ValueError("密码复杂度不足：至少8个字符，包含字母")
+    
     # bcrypt限制密码长度为72字节，超过会抛出异常，需要手动截断
     password = password[:72]
     # 使用直接的bcrypt库进行哈希

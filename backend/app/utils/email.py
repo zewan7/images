@@ -83,7 +83,7 @@ def send_registration_otp(to_email, otp):
         <h2>欢迎注册视觉画廊！</h2>
         <p>您的注册验证码是：</p>
         <p style="font-size: 24px; font-weight: bold; color: #4a90e2; letter-spacing: 3px;">{otp}</p>
-        <p>验证码有效期为10分钟，请尽快完成注册。</p>
+        <p>验证码有效期为5分钟，请尽快完成注册。</p>
         <p>如果您没有注册我们的服务，请忽略此邮件。</p>
       </body>
     </html>
