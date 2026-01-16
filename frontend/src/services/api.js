@@ -56,6 +56,15 @@ const fetchWithCache = async (url, options = {}) => {
   const fetchOptions = { ...options }
   delete fetchOptions.forceRefresh
   
+  // 自动添加Authorization头
+  const token = localStorage.getItem('image_gallery_token')
+  if (token) {
+    fetchOptions.headers = {
+      ...fetchOptions.headers,
+      'Authorization': `Bearer ${token}`
+    }
+  }
+  
   const response = await fetch(url, fetchOptions)
   if (!response.ok) {
     throw new Error(`Failed to fetch: ${response.status}`)
