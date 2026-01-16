@@ -21,7 +21,7 @@ AI_MODEL = settings.AI_MODEL
 AI_API_KEY = settings.AI_API_KEY
 THUMBNAIL_SIZE = settings.thumbnail_size_tuple
 THUMBNAIL_QUALITY = settings.THUMBNAIL_QUALITY
-DEFAULT_USER_ID = settings.DEFAULT_USER_ID
+DEFAULT_USER_ID = 3
 
 # 将图片转换为base64格式，用于AI API调用
 def image_to_base64(image_path):
