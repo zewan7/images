@@ -36,6 +36,18 @@ function ImageCard({ image, onClick, onDelete, onEdit, showActions = false }) {
     return originalUrl.replace(/\/images\/(\d{8})\//, '/images/$1_1/')
   }
   
+  // 保存滚动位置并导航到详情页
+  const handleImageClick = () => {
+    // 保存当前滚动位置到sessionStorage
+    sessionStorage.setItem('galleryScrollPos', window.scrollY.toString())
+    
+    // 如果提供了onClick，则调用onClick，否则默认使用Link行为
+    if (onClick) {
+      onClick(image)
+    }
+    // 对于Link，不需要额外处理，React Router会自动导航
+  };
+
   // 如果没有提供onClick，则使用默认的Link行为
   const cardContent = (
     <div className="image-card">
@@ -49,6 +61,7 @@ function ImageCard({ image, onClick, onDelete, onEdit, showActions = false }) {
             loading="lazy"
             className={`image-thumbnail ${isLoaded ? 'loaded' : ''}`}
             onLoad={() => setIsLoaded(true)}
+            onClick={handleImageClick} // 添加点击事件
           />
         )}
         
@@ -86,7 +99,7 @@ function ImageCard({ image, onClick, onDelete, onEdit, showActions = false }) {
     return (
       <div 
         className="image-card-link"
-        onClick={() => onClick(image)}
+        onClick={handleImageClick}
       >
         {cardContent}
       </div>
@@ -94,7 +107,11 @@ function ImageCard({ image, onClick, onDelete, onEdit, showActions = false }) {
   }
   
   return (
-    <Link to={`/image/${image.id}`} className="image-card-link">
+    <Link 
+      to={`/image/${image.id}`} 
+      className="image-card-link"
+      onClick={handleImageClick}
+    >
       {cardContent}
     </Link>
   );

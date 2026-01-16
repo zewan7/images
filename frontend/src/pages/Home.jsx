@@ -60,7 +60,7 @@ function Home() {
     }
   }
 
-  // 监听路由变化，当用户返回首页时重置状态
+  // 监听路由变化，当用户返回首页时恢复滚动位置
   useEffect(() => {
     // 当路由变化时，重置所有状态
     setSkip(0)
@@ -68,6 +68,20 @@ function Home() {
     setImages([])
     setAllImages([])
     loadImages()
+    
+    // 恢复之前保存的滚动位置
+    const savedScrollPos = sessionStorage.getItem('galleryScrollPos')
+    if (savedScrollPos) {
+      // 使用setTimeout确保图片加载完成后再滚动
+      setTimeout(() => {
+        window.scrollTo({ 
+          top: parseInt(savedScrollPos), 
+          behavior: 'smooth' 
+        })
+        // 清除保存的位置
+        sessionStorage.removeItem('galleryScrollPos')
+      }, 500)
+    }
   }, [location])
 
   // 监听浏览器返回事件，重置状态
@@ -79,6 +93,18 @@ function Home() {
       setImages([])
       setAllImages([])
       loadImages()
+      
+      // 恢复之前保存的滚动位置
+      const savedScrollPos = sessionStorage.getItem('galleryScrollPos')
+      if (savedScrollPos) {
+        setTimeout(() => {
+          window.scrollTo({ 
+            top: parseInt(savedScrollPos), 
+            behavior: 'smooth' 
+          })
+          sessionStorage.removeItem('galleryScrollPos')
+        }, 500)
+      }
     }
 
     window.addEventListener('popstate', handlePopState)
