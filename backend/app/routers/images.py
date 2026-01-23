@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -14,25 +16,23 @@ from datetime import datetime
 from fastapi.security import OAuth2PasswordBearer
 from app.utils.auth import verify_token
 
+logger = logging.getLogger(__name__)
+
 # 自定义依赖：获取当前用户（如果已登录），否则返回None
 async def get_optional_current_user(token: str = Depends(OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)), db: Session = Depends(get_db)):
     from app.routers.auth import get_current_user
-    
+
     try:
         if not token:
-            print("No token provided")
+            logger.debug("No token provided")
             return None
-            
+
         # 复用现有的get_current_user函数，传递token参数
         current_user = get_current_user(token=token, db=db)
-        print(f"Current user from get_current_user: {current_user}")
-        print(f"User email: {current_user.email}")
-        print(f"User ID: {current_user.id}")
+        logger.debug(f"Current user authenticated: {current_user.username if current_user else 'None'}")
         return current_user
     except Exception as e:
-        print(f"User not authenticated: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.debug(f"User not authenticated: {e}")
         return None
 
 router = APIRouter(
@@ -85,24 +85,20 @@ async def get_images(skip: int = 0, limit: int = 100, search: str = None, db: Se
     # 1. 首先获取用户信息，如果未登录则为None
     user_id = getattr(current_user, 'id', None)
     user_email = getattr(current_user, 'email', None)
-    
-    # 调试日志
-    print(f"Current user: {current_user}")
-    print(f"Current user ID: {user_id}")
-    print(f"Current user email: {user_email}")
-    print(f"SPECIAL_USER_ID: {SPECIAL_USER_ID}")
-    print(f"SPECIAL_USER_EMAIL: {SPECIAL_USER_EMAIL}")
-    
+
+    # 记录权限检查日志
+    logger.debug(f"Image access request - User: {user_id}, Email: {user_email}")
+
     # 判断是否为特殊用户
     is_special_user = (user_id == SPECIAL_USER_ID) or (user_email == SPECIAL_USER_EMAIL)
-    
+
     if is_special_user:
         # 特殊用户只能查看自己上传的图片
-        print(f"Applying special user filter: Image.user_id == {user_id}")
+        logger.debug(f"Applying special user filter: Image.user_id == {user_id}")
         query = query.filter(Image.user_id == user_id)
     else:
         # 其他用户（包括未登录用户）无法查看特殊用户上传的图片
-        print(f"Applying regular user filter: Image.user_id != {SPECIAL_USER_ID}")
+        logger.debug(f"Applying regular user filter: Image.user_id != {SPECIAL_USER_ID}")
         query = query.filter(Image.user_id != SPECIAL_USER_ID)
     
     # 添加搜索过滤
@@ -143,25 +139,22 @@ async def get_image(image_id: int, db: Session = Depends(get_db), current_user: 
     # 1. 首先获取用户信息，如果未登录则为None
     user_id = getattr(current_user, 'id', None)
     user_email = getattr(current_user, 'email', None)
-    
-    # 调试日志
-    print(f"Current user: {current_user}")
-    print(f"Current user ID: {user_id}")
-    print(f"Current user email: {user_email}")
-    print(f"Image user ID: {image.user_id}")
-    
+
+    # 记录权限检查日志
+    logger.debug(f"Image detail request - User: {user_id}, Image: {image_id}, Owner: {image.user_id}")
+
     # 判断是否为特殊用户
     is_special_user = (user_id == SPECIAL_USER_ID) or (user_email == SPECIAL_USER_EMAIL)
-    
+
     if is_special_user:
         # 特殊用户只能查看自己上传的图片
         if image.user_id != user_id:
-            print(f"Special user {user_id} trying to access image {image.id} owned by {image.user_id} - Forbidden")
+            logger.warning(f"Special user {user_id} denied access to image {image.id} owned by {image.user_id}")
             raise HTTPException(status_code=403, detail="Not authorized to view this image")
     else:
         # 其他用户（包括未登录用户）无法查看特殊用户上传的图片
         if image.user_id == SPECIAL_USER_ID:
-            print(f"Regular user {user_id} trying to access image {image.id} owned by special user {SPECIAL_USER_ID} - Not Found")
+            logger.warning(f"User {user_id} denied access to special user's image {image.id}")
             raise HTTPException(status_code=404, detail="Image not found")
     
     # 添加图片URL和用户名 - 详情页返回原图URL

@@ -1,7 +1,10 @@
+import logging
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 # 发送邮件函数
 def send_email(to_email, subject, body):
@@ -11,10 +14,10 @@ def send_email(to_email, subject, body):
         msg['From'] = settings.EMAIL_FROM
         msg['To'] = to_email
         msg['Subject'] = subject
-        
+
         # 添加邮件正文
         msg.attach(MIMEText(body, 'html'))
-        
+
         # 连接SMTP服务器
         if settings.SMTP_PORT == 465:
             # 使用SSL连接
@@ -23,19 +26,20 @@ def send_email(to_email, subject, body):
             # 使用TLS连接
             server = smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT)
             server.starttls()
-        
+
         # 登录SMTP服务器
         server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-        
+
         # 发送邮件
         server.send_message(msg)
-        
+
         # 关闭连接
         server.quit()
-        
+
+        logger.info(f"Email sent successfully to {to_email}")
         return True
     except Exception as e:
-
+        logger.error(f"Failed to send email to {to_email}: {str(e)}")
         return False
 
 # 发送验证邮件

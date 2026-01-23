@@ -1,13 +1,36 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
 import os
+import secrets
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
     # 应用配置
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 9000
     DEBUG: bool = True
-    SECRET_KEY: str = "your-secret-key-change-this-in-production"  # JWT密钥
+
+    # 安全密钥配置 - 必须从环境变量设置，生产环境不可使用默认值
+    SECRET_KEY: str = None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # 如果没有设置SECRET_KEY，生成一个随机密钥（仅用于开发环境）
+        if not self.SECRET_KEY:
+            if self.DEBUG:
+                self.SECRET_KEY = secrets.token_hex(32)
+                logger.warning(
+                    "WARNING: SECRET_KEY not set in environment variables. "
+                    "A random key has been generated for development. "
+                    "Please set SECRET_KEY in .env file for production!"
+                )
+            else:
+                raise ValueError(
+                    "SECRET_KEY must be set in environment variables for production deployment. "
+                    "Please add SECRET_KEY to your .env file with a strong random value."
+                )
     
     # 数据库配置 - 使用SQLite作为默认值
     DATABASE_URL: str = "sqlite:///./images.db"

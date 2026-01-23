@@ -5,8 +5,8 @@ import bcrypt
 import secrets
 from config.settings import settings
 
-# JWT配置
-SECRET_KEY = settings.SECRET_KEY if hasattr(settings, "SECRET_KEY") else secrets.token_hex(32)
+# JWT配置 - SECRET_KEY由settings.py确保始终存在
+SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
