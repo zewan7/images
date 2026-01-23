@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { registerUser, requestRegisterOtp } from '../services/auth.js'
 
-function RegisterModal({ show, onClose }) {
+function RegisterModal({ show, onClose, onSwitchToLogin }) {
   // 条件渲染：如果不显示，直接返回null，避免hooks调用
   if (!show) return null
 
@@ -391,9 +391,10 @@ function RegisterModal({ show, onClose }) {
             href="#"
             onClick={(e) => {
               e.preventDefault()
-              // 关闭注册模态框，打开登录模态框
               onClose()
-              // 这里需要一个方法来打开登录模态框，可以通过props传递
+              if (onSwitchToLogin) {
+                onSwitchToLogin()
+              }
             }}
             style={{ color: '#4a90e2', textDecoration: 'none', marginLeft: '8px' }}
           >

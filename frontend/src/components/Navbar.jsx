@@ -214,8 +214,22 @@ function Navbar({ onImageUploaded }) {
       </div>
       
       {/* 模态框 */}
-      <LoginModal show={showLogin} onClose={() => setShowLogin(false)} />
-      <RegisterModal show={showRegister} onClose={() => setShowRegister(false)} />
+      <LoginModal 
+        show={showLogin} 
+        onClose={() => setShowLogin(false)} 
+        onSwitchToRegister={() => {
+          setShowLogin(false)
+          setShowRegister(true)
+        }} 
+      />
+      <RegisterModal 
+        show={showRegister} 
+        onClose={() => setShowRegister(false)} 
+        onSwitchToLogin={() => {
+          setShowRegister(false)
+          setShowLogin(true)
+        }} 
+      />
       <UploadModal show={showUpload} onClose={() => setShowUpload(false)} onUploadSuccess={onImageUploaded} />
     </nav>
   )

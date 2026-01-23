@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { loginUser } from '../services/auth.js'
 import ForgotPasswordModal from './ForgotPasswordModal.jsx'
 
-function LoginModal({ show, onClose }) {
+function LoginModal({ show, onClose, onSwitchToRegister }) {
   // 条件渲染：如果不显示，直接返回null，避免hooks调用
   if (!show) return null
 
@@ -234,9 +234,10 @@ function LoginModal({ show, onClose }) {
             href="#"
             onClick={(e) => {
               e.preventDefault()
-              // 关闭登录模态框，打开注册模态框
               onClose()
-              // 这里需要一个方法来打开注册模态框，可以通过props传递
+              if (onSwitchToRegister) {
+                onSwitchToRegister()
+              }
             }}
             style={{ color: '#4a90e2', textDecoration: 'none', marginLeft: '8px' }}
           >
