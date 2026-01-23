@@ -1,4 +1,5 @@
 .trae/
+images/
 
 # Python compiled files
 *.pyc
