@@ -261,9 +261,10 @@ function Home() {
                     // 获取当前行的图片数量
                     const count = rowCounts[rowIndex % rowCounts.length];
                     const rowImages = images.slice(currentIndex, currentIndex + count);
+                    const rowTypeIndex = (rowIndex % rowCounts.length) + 1;
                     
                     rows.push(
-                      <div key={rowIndex} className="grid-row">
+                      <div key={rowIndex} className={`grid-row row-${rowTypeIndex}`}>
                         {rowImages.map(image => (
                           <div key={image.id} className="grid-item">
                             <ImageCard 
@@ -552,37 +553,36 @@ function Home() {
         }
         
         /* 第一行 - 4个图片，统一间距7px */
-        .grid-row:nth-child(1) {
+        .grid-row.row-1 {
           gap: 7px;
         }
         
-        .grid-row:nth-child(1) .grid-item {
+        .grid-row.row-1 .grid-item {
           width: calc(25% - 5.25px); /* 4个图片，3个间距 */
         }
         
         /* 第二、三行 - 5个图片，统一间距7px */
-        .grid-row:nth-child(2),
-        .grid-row:nth-child(3) {
+        .grid-row.row-2,
+        .grid-row.row-3 {
           gap: 7px;
         }
         
-        .grid-row:nth-child(2) .grid-item,
-        .grid-row:nth-child(3) .grid-item {
+        .grid-row.row-2 .grid-item,
+        .grid-row.row-3 .grid-item {
           width: calc(20% - 5.6px); /* 5个图片，4个间距 */
         }
         
         /* 第四行 - 6个图片，统一间距7px */
-        .grid-row:nth-child(4) {
+        .grid-row.row-4 {
           gap: 7px;
         }
         
-        .grid-row:nth-child(4) .grid-item {
+        .grid-row.row-4 .grid-item {
           width: calc(16.67% - 5.83px); /* 6个图片，5个间距 */
         }
         
         /* 第五行及以下 - 8个图片，统一间距7px */
-        .grid-row:nth-child(5) .grid-item,
-        .grid-row:nth-child(n+5) .grid-item {
+        .grid-row.row-5 .grid-item {
           width: calc(12.5% - 6.125px); /* 8个图片，7个间距 */
         }
         

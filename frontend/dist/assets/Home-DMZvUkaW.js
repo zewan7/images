@@ -1,4 +1,4 @@
-import{u as U,j as e}from"./index-D-ugsI3O.js";import{u as M,r}from"./react-vendor-BNorfeeT.js";import{N as A}from"./Navbar-C93HslWO.js";import{I as K}from"./ImageCard-DXUQUllJ.js";import{f as B}from"./api-BYKoRjMC.js";function V(){const{user:D}=U(),I=M(),[l,p]=r.useState([]),[N,x]=r.useState([]),[d,b]=r.useState(!0),[z,E]=r.useState(0),[n,w]=r.useState(""),[v,j]=r.useState(!1),[T,C]=r.useState(!1),[u,S]=r.useState(!1),[m,f]=r.useState(!0),[L,g]=r.useState(0),[h]=r.useState(40),i=async(t="",o=!1)=>{try{const c=o?L:0;o?S(!0):(b(!0),g(0));const a=await B(c,h,t,{forceRefresh:!0});o?(p(s=>[...s,...a]),x(s=>[...s,...a]),g(s=>s+h),f(a.length===h)):(p(a),x(a),g(h),f(a.length===h))}catch(c){console.error("Failed to load images:",c)}finally{o?S(!1):(b(!1),j(!1))}};r.useEffect(()=>{g(0),f(!0),p([]),x([]),i();const t=sessionStorage.getItem("galleryScrollPos");t&&setTimeout(()=>{window.scrollTo({top:parseInt(t),behavior:"smooth"}),sessionStorage.removeItem("galleryScrollPos")},500)},[I]),r.useEffect(()=>{const t=()=>{g(0),f(!0),p([]),x([]),i();const o=sessionStorage.getItem("galleryScrollPos");o&&setTimeout(()=>{window.scrollTo({top:parseInt(o),behavior:"smooth"}),sessionStorage.removeItem("galleryScrollPos")},500)};return window.addEventListener("popstate",t),()=>window.removeEventListener("popstate",t)},[]),r.useEffect(()=>{i()},[z]),r.useEffect(()=>{n.trim()||i()},[n]);const P=()=>{E(t=>t+1)},Y=t=>{t.preventDefault(),j(!0),n.trim()?i(n):i()},k=()=>{w(""),i()};r.useEffect(()=>{const t=()=>{C(window.scrollY>300),window.innerHeight+window.scrollY>=document.body.offsetHeight-200&&m&&!u&&!d&&i(n,!0)};return window.addEventListener("scroll",t),()=>window.removeEventListener("scroll",t)},[m,u,d,n]);const F=()=>{window.scrollTo({top:0,behavior:"smooth"})},H=()=>{const t=n?l:N;if(t.length>0){const o=[...t].sort(()=>Math.random()-.5);p(o.slice(0,l.length))}else i()};return e.jsxs(e.Fragment,{children:[e.jsxs("div",{className:"home-container",children:[e.jsx(A,{onImageUploaded:P}),e.jsx("div",{className:"search-container",children:e.jsx("form",{onSubmit:Y,className:"search-form",children:e.jsxs("div",{className:"search-input-wrapper",children:[e.jsx("input",{type:"text",placeholder:"搜索图片标题、描述或作者...",value:n,onChange:t=>w(t.target.value),className:"search-input",disabled:d}),e.jsxs("div",{className:"search-actions",children:[n&&e.jsx("button",{type:"button",onClick:k,className:"clear-button",disabled:d,title:"清除搜索",children:"×"}),e.jsx("button",{type:"submit",className:"search-button",disabled:d||v,children:v?"搜索中...":"搜索"}),e.jsx("button",{type:"button",onClick:H,className:"random-button",disabled:d,title:"随机显示图片",children:"随机"})]})]})})}),d?e.jsxs("div",{className:"loading-container",children:[e.jsx("div",{className:"spinner"}),e.jsx("p",{children:"正在加载精彩内容..."})]}):e.jsxs(e.Fragment,{children:[e.jsx("div",{className:"custom-grid",children:l.length>0?e.jsx(e.Fragment,{children:(()=>{const t=[];let o=0;const c=[4,5,5,6,8];let a=0;for(;o<l.length;){const s=c[a%c.length],R=l.slice(o,o+s);t.push(e.jsx("div",{className:"grid-row",children:R.map(y=>e.jsx("div",{className:"grid-item",children:e.jsx(K,{image:y})},y.id))},a)),o+=s,a++}return t})()}):e.jsxs("div",{className:"no-results",children:[e.jsx("h2",{children:"未找到图片"}),e.jsx("p",{children:"尝试使用其他关键词搜索"}),n&&e.jsx("button",{onClick:k,className:"clear-search-btn",children:"查看所有图片"})]})}),u&&e.jsxs("div",{className:"load-more-container",children:[e.jsx("div",{className:"spinner"}),e.jsx("p",{children:"正在加载更多图片..."})]}),!m&&l.length>0&&e.jsx("div",{className:"no-more-container",children:e.jsx("p",{children:"已经到底了~"})})]}),T&&e.jsx("button",{className:"scroll-top-btn",onClick:F,title:"返回顶部",children:"↑"})]}),e.jsx("style",{jsx:!0,children:`
+import{u as M,j as e}from"./index-fcjiNw9a.js";import{u as A,r}from"./react-vendor-BNorfeeT.js";import{N as K}from"./Navbar-D0VXTyAz.js";import{I as B}from"./ImageCard-DkZJrovJ.js";import{f as D}from"./api-BYKoRjMC.js";function V(){const{user:O}=M(),I=A(),[c,p]=r.useState([]),[N,h]=r.useState([]),[d,b]=r.useState(!0),[z,T]=r.useState(0),[n,w]=r.useState(""),[v,j]=r.useState(!1),[E,C]=r.useState(!1),[u,S]=r.useState(!1),[m,f]=r.useState(!0),[L,g]=r.useState(0),[x]=r.useState(40),s=async(t="",o=!1)=>{try{const l=o?L:0;o?S(!0):(b(!0),g(0));const a=await D(l,x,t,{forceRefresh:!0});o?(p(i=>[...i,...a]),h(i=>[...i,...a]),g(i=>i+x),f(a.length===x)):(p(a),h(a),g(x),f(a.length===x))}catch(l){console.error("Failed to load images:",l)}finally{o?S(!1):(b(!1),j(!1))}};r.useEffect(()=>{g(0),f(!0),p([]),h([]),s();const t=sessionStorage.getItem("galleryScrollPos");t&&setTimeout(()=>{window.scrollTo({top:parseInt(t),behavior:"smooth"}),sessionStorage.removeItem("galleryScrollPos")},500)},[I]),r.useEffect(()=>{const t=()=>{g(0),f(!0),p([]),h([]),s();const o=sessionStorage.getItem("galleryScrollPos");o&&setTimeout(()=>{window.scrollTo({top:parseInt(o),behavior:"smooth"}),sessionStorage.removeItem("galleryScrollPos")},500)};return window.addEventListener("popstate",t),()=>window.removeEventListener("popstate",t)},[]),r.useEffect(()=>{s()},[z]),r.useEffect(()=>{n.trim()||s()},[n]);const P=()=>{T(t=>t+1)},Y=t=>{t.preventDefault(),j(!0),n.trim()?s(n):s()},k=()=>{w(""),s()};r.useEffect(()=>{const t=()=>{C(window.scrollY>300),window.innerHeight+window.scrollY>=document.body.offsetHeight-200&&m&&!u&&!d&&s(n,!0)};return window.addEventListener("scroll",t),()=>window.removeEventListener("scroll",t)},[m,u,d,n]);const F=()=>{window.scrollTo({top:0,behavior:"smooth"})},H=()=>{const t=n?c:N;if(t.length>0){const o=[...t].sort(()=>Math.random()-.5);p(o.slice(0,c.length))}else s()};return e.jsxs(e.Fragment,{children:[e.jsxs("div",{className:"home-container",children:[e.jsx(K,{onImageUploaded:P}),e.jsx("div",{className:"search-container",children:e.jsx("form",{onSubmit:Y,className:"search-form",children:e.jsxs("div",{className:"search-input-wrapper",children:[e.jsx("input",{type:"text",placeholder:"搜索图片标题、描述或作者...",value:n,onChange:t=>w(t.target.value),className:"search-input",disabled:d}),e.jsxs("div",{className:"search-actions",children:[n&&e.jsx("button",{type:"button",onClick:k,className:"clear-button",disabled:d,title:"清除搜索",children:"×"}),e.jsx("button",{type:"submit",className:"search-button",disabled:d||v,children:v?"搜索中...":"搜索"}),e.jsx("button",{type:"button",onClick:H,className:"random-button",disabled:d,title:"随机显示图片",children:"随机"})]})]})})}),d?e.jsxs("div",{className:"loading-container",children:[e.jsx("div",{className:"spinner"}),e.jsx("p",{children:"正在加载精彩内容..."})]}):e.jsxs(e.Fragment,{children:[e.jsx("div",{className:"custom-grid",children:c.length>0?e.jsx(e.Fragment,{children:(()=>{const t=[];let o=0;const l=[4,5,5,6,8];let a=0;for(;o<c.length;){const i=l[a%l.length],R=c.slice(o,o+i),U=a%l.length+1;t.push(e.jsx("div",{className:`grid-row row-${U}`,children:R.map(y=>e.jsx("div",{className:"grid-item",children:e.jsx(B,{image:y})},y.id))},a)),o+=i,a++}return t})()}):e.jsxs("div",{className:"no-results",children:[e.jsx("h2",{children:"未找到图片"}),e.jsx("p",{children:"尝试使用其他关键词搜索"}),n&&e.jsx("button",{onClick:k,className:"clear-search-btn",children:"查看所有图片"})]})}),u&&e.jsxs("div",{className:"load-more-container",children:[e.jsx("div",{className:"spinner"}),e.jsx("p",{children:"正在加载更多图片..."})]}),!m&&c.length>0&&e.jsx("div",{className:"no-more-container",children:e.jsx("p",{children:"已经到底了~"})})]}),E&&e.jsx("button",{className:"scroll-top-btn",onClick:F,title:"返回顶部",children:"↑"})]}),e.jsx("style",{jsx:!0,children:`
         .home-container {
           min-height: 100vh;
           background: linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 33%, #16213e 66%, #0f3460 100%);
@@ -226,37 +226,36 @@ import{u as U,j as e}from"./index-D-ugsI3O.js";import{u as M,r}from"./react-vend
         }
         
         /* 第一行 - 4个图片，统一间距7px */
-        .grid-row:nth-child(1) {
+        .grid-row.row-1 {
           gap: 7px;
         }
         
-        .grid-row:nth-child(1) .grid-item {
+        .grid-row.row-1 .grid-item {
           width: calc(25% - 5.25px); /* 4个图片，3个间距 */
         }
         
         /* 第二、三行 - 5个图片，统一间距7px */
-        .grid-row:nth-child(2),
-        .grid-row:nth-child(3) {
+        .grid-row.row-2,
+        .grid-row.row-3 {
           gap: 7px;
         }
         
-        .grid-row:nth-child(2) .grid-item,
-        .grid-row:nth-child(3) .grid-item {
+        .grid-row.row-2 .grid-item,
+        .grid-row.row-3 .grid-item {
           width: calc(20% - 5.6px); /* 5个图片，4个间距 */
         }
         
         /* 第四行 - 6个图片，统一间距7px */
-        .grid-row:nth-child(4) {
+        .grid-row.row-4 {
           gap: 7px;
         }
         
-        .grid-row:nth-child(4) .grid-item {
+        .grid-row.row-4 .grid-item {
           width: calc(16.67% - 5.83px); /* 6个图片，5个间距 */
         }
         
         /* 第五行及以下 - 8个图片，统一间距7px */
-        .grid-row:nth-child(5) .grid-item,
-        .grid-row:nth-child(n+5) .grid-item {
+        .grid-row.row-5 .grid-item {
           width: calc(12.5% - 6.125px); /* 8个图片，7个间距 */
         }
         
