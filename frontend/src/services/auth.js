@@ -34,12 +34,13 @@ export const requestRegisterOtp = async (email) => {
       },
       body: JSON.stringify({ email }),
     })
-    
+
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.detail || '发送验证码失败')
+      let errorData = {}
+      try { errorData = await response.json() } catch (e) {}
+      throw new Error(parseErrorDetail(errorData))
     }
-    
+
     return await response.json()
   } catch (error) {
     console.error('发送验证码错误:', error)
@@ -57,12 +58,13 @@ export const verifyRegisterOtp = async (email, otp) => {
       },
       body: JSON.stringify({ email, otp }),
     })
-    
+
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.detail || '验证验证码失败')
+      let errorData = {}
+      try { errorData = await response.json() } catch (e) {}
+      throw new Error(parseErrorDetail(errorData))
     }
-    
+
     return await response.json()
   } catch (error) {
     console.error('验证验证码错误:', error)
@@ -143,12 +145,13 @@ export const loginUser = async (credentials) => {
       },
       body: JSON.stringify(credentials),
     })
-    
+
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.detail || '登录失败')
+      let errorData = {}
+      try { errorData = await response.json() } catch (e) {}
+      throw new Error(parseErrorDetail(errorData))
     }
-    
+
     const data = await response.json()
     // 保存令牌
     setToken(data.access_token)
