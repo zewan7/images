@@ -25,6 +25,11 @@ export default defineConfig({
       }
     }
   },
+  // 预览服务器（npm run preview，生产构建预览）：默认端口4173，这里与dev对齐为8300
+  preview: {
+    port: 8300,
+    host: true
+  },
   build: {
     rollupOptions: {
       output: {
