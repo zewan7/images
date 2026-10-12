@@ -28,7 +28,9 @@ export default defineConfig({
   // 预览服务器（npm run preview，生产构建预览）：默认端口4173，这里与dev对齐为8300
   preview: {
     port: 8300,
-    host: true
+    host: true,
+    // 允许通过自定义域名/内网IP访问（不配置时Vite只认localhost）
+    allowedHosts: ['app.eeffve.click']
   },
   build: {
     rollupOptions: {
