@@ -185,6 +185,15 @@ Termux 无法运行 Docker，但本项目技术栈（FastAPI + SQLite + React）
 
    脚本会自动完成：安装依赖（python/nodejs/redis 工具链）→ 安装 pip/npm 依赖 → 生成 `.env`（自动生成 SECRET_KEY，默认 8301 端口 + memory 后端 + console 邮件）→ 构建前端 → 启动后端。
 
+   > **指定 Python 版本**：脚本默认安装 Termux 官方 `python` 包（跟随上游版本，目前为 3.14.x）。若你的 pkg 源提供其他 Python 版本包，可用环境变量指定：
+   >
+   > ```bash
+   > # 示例（包名取决于你的 Termux 源是否提供，不存在时脚本自动回退官方 python 并警告）
+   > PYTHON_PKG=python311 bash termux_deploy.sh   # 或 python3.11 / python312 / python3.12 ...
+   > ```
+   >
+   > 注意：自定义 Python 版本无法使用 Termux 预编译的 `python-pillow/python-cryptography/python-bcrypt` 包，脚本会自动改为通过 pip 现场编译（依赖已装 clang/rust 工具链），耗时较长，属正常现象。
+
 2. 另开一个终端启动前端：
 
    ```bash
@@ -198,7 +207,8 @@ Termux 无法运行 Docker，但本项目技术栈（FastAPI + SQLite + React）
 
    ```bash
    cd ~/images
-   bash termux_start.sh   # 同时拉起前后端
+   bash termux_start.sh   # 同时拉起前后端（Python 命令默认 python）
+   # 若部署时指定了其他 Python 版本：PY=python311 bash termux_start.sh
    ```
 
 注意事项：
