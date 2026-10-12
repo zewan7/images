@@ -70,6 +70,41 @@ export const verifyRegisterOtp = async (email, otp) => {
   }
 }
 
+// 解析后端错误信息为可读文本（FastAPI 422 的 detail 是数组，需转成明确文案）
+const parseErrorDetail = (errorData) => {
+  const detail = errorData?.detail
+  // 422 校验错误：detail 是 [{loc:[...], msg:"...", type:"..."}]
+  if (Array.isArray(detail)) {
+    // 字段名映射为中文
+    const fieldMap = {
+      username: '用户名',
+      email: '邮箱',
+      password: '密码',
+      otp: '验证码',
+      full_name: '姓名',
+    }
+    return detail.map((d) => {
+      const field = d.loc?.[1] || ''
+      const fieldName = fieldMap[field] || field || '请求'
+      let msg = d.msg || '格式不正确'
+      // 把 Pydantic 英文提示翻译成常用中文
+      if (msg.includes('at least')) {
+        msg = `太短了（最少 ${msg.match(/\d+/)?.[0] || 3} 个字符）`
+      } else if (msg.includes('String should have at most')) {
+        msg = '太长了'
+      } else if (msg.includes('value is not a valid email address')) {
+        msg = '不是有效的邮箱地址'
+      } else if (msg.includes('Input should be a valid string')) {
+        msg = '格式不正确'
+      }
+      return `${fieldName}：${msg}`
+    }).join('；')
+  }
+  // 其他错误：detail 是字符串
+  if (typeof detail === 'string') return detail
+  return errorData?.message || '请求失败'
+}
+
 // 用户注册
 export const registerUser = async (userData) => {
   try {
@@ -80,12 +115,17 @@ export const registerUser = async (userData) => {
       },
       body: JSON.stringify(userData),
     })
-    
+
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.detail || '注册失败')
+      let errorData = {}
+      try {
+        errorData = await response.json()
+      } catch (e) {
+        // 响应不是 JSON（如网络层错误）
+      }
+      throw new Error(parseErrorDetail(errorData))
     }
-    
+
     return await response.json()
   } catch (error) {
     console.error('注册错误:', error)
