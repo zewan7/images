@@ -4,7 +4,7 @@ from typing import Optional
 
 # 基础用户Schema
 class UserBase(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50)
+    username: str = Field(..., min_length=2, max_length=50)
     email: EmailStr
     full_name: Optional[str] = Field(None, max_length=100)
 
