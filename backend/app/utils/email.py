@@ -6,8 +6,20 @@ from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
-# 发送邮件函数
+# 邮件发送后端：smtp=真实发送，console=仅在日志中输出验证码（适合无邮箱环境的开发/测试）
 def send_email(to_email, subject, body):
+    if settings.EMAIL_MODE == "console":
+        # 提取邮件中的验证码（6位数字）或链接到日志，方便开发调试
+        import re
+        code = re.search(r'>(\d{6})</p>', body)
+        link = re.search(r'href="([^"]+)"', body)
+        print(
+            f"[EMAIL_MODE=console 未真实发送] 收件人={to_email} 主题={subject}"
+            f" 验证码={code.group(1) if code else 'N/A'}"
+            f" 链接={link.group(1) if link else 'N/A'}",
+            flush=True,
+        )
+        return True
     try:
         # 创建邮件
         msg = MIMEMultipart()

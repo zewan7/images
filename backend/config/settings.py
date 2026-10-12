@@ -45,12 +45,18 @@ class Settings(BaseSettings):
     SMTP_USERNAME: str = ""
     SMTP_PASSWORD: str = ""
     EMAIL_FROM: str = ""
-    
-    # Redis配置（用于存储验证码）
+
+    # 验证码存储后端：redis=使用Redis，memory=使用纯Python内存存储（不依赖Redis）
+    OTP_STORAGE_BACKEND: str = "memory"
+
+    # Redis配置（OTP_STORAGE_BACKEND=redis 时使用）
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     REDIS_PASSWORD: str = ""
     REDIS_DB: int = 0
+
+    # 邮件发送后端：smtp=真实发送，console=验证码输出到日志（无需邮箱，适合Termux/开发环境）
+    EMAIL_MODE: str = "console"
     
     # AI配置
     AI_API_URL: str = "https://api.siliconflow.cn/v1/chat/completions"

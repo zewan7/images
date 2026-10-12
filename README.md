@@ -71,6 +71,8 @@ images_app/
 
 ### 方法一：使用Docker Compose（推荐）
 
+> 注意：Termux（Android 终端）无法运行 Docker，请使用下方的 [方法三：Termux 部署](#方法三termux-部署android-手机无需-dockerredis邮箱)。
+
 1. 克隆项目
    ```bash
    git clone <repository-url>
@@ -152,18 +154,62 @@ images_app/
 |--------|------|--------|
 | DATABASE_URL | 数据库连接URL | sqlite:///./images.db |
 | APP_HOST | 应用主机地址 | 0.0.0.0 |
-| APP_PORT | 应用端口 | 9000 |
-| DEBUG | 调试模式 | True |
+| APP_PORT | 应用端口（前端代理硬编码指向8301，改动需同步前端配置） | 8301 |
+| DEBUG | 调试模式 | False |
 | SECRET_KEY | JWT密钥 | your-secret-key-change-this-in-production |
 | IMAGE_UPLOAD_DIR | 图片存储目录 | ./images |
-| IMAGE_BASE_URL | 图片访问基础URL | http://localhost:9000/images |
+| IMAGE_BASE_URL | 图片访问基础URL | http://localhost:8301/images |
 | SMTP_SERVER | 邮件服务器 | smtp.qq.com |
 | SMTP_PORT | 邮件服务器端口 | 465 |
-| REDIS_HOST | Redis主机 | localhost |
+| SMTP_USERNAME / SMTP_PASSWORD / EMAIL_FROM | 发件邮箱及授权码 | 空 |
+| EMAIL_MODE | 邮件发送后端：`smtp`=真实发送；`console`=验证码输出到后端日志（无需邮箱） | console |
+| REDIS_HOST | Redis主机（仅 `OTP_STORAGE_BACKEND=redis` 时需要） | localhost |
 | REDIS_PORT | Redis端口 | 6379 |
+| OTP_STORAGE_BACKEND | 验证码存储后端：`memory`=纯Python内存（不依赖Redis，重启丢失）；`redis`=使用Redis | memory |
 | AI_API_URL | AI API地址 | https://api.siliconflow.cn/v1/chat/completions |
 | AI_MODEL | AI模型名称 | Qwen/Qwen2.5-VL-72B-Instruct |
 | AI_API_KEY | AI API密钥 | your-ai-api-key |
+
+### 方法三：Termux 部署（Android 手机，无需 Docker/Redis/邮箱）
+
+Termux 无法运行 Docker，但本项目技术栈（FastAPI + SQLite + React）在 Termux 上全部可用。项目内置了一键脚本，已默认切换为**内存验证码 + 控制台邮件 + SQLite**，无需安装 Redis、无需配置邮箱。
+
+1. 安装 Termux 后执行：
+
+   ```bash
+   pkg update -y && pkg upgrade -y
+   # 复制项目到 ~/images（如通过 git clone 或 scp 传输）
+   cd ~/images
+   bash termux_deploy.sh
+   ```
+
+   脚本会自动完成：安装依赖（python/nodejs/redis 工具链）→ 安装 pip/npm 依赖 → 生成 `.env`（自动生成 SECRET_KEY，默认 8301 端口 + memory 后端 + console 邮件）→ 构建前端 → 启动后端。
+
+2. 另开一个终端启动前端：
+
+   ```bash
+   cd ~/images/frontend
+   npm run preview -- --host
+   ```
+
+3. 手机浏览器访问 `http://localhost:8300`；电脑访问需手机与电脑同一 Wi-Fi，用 `http://<手机局域网IP>:8300`。
+
+4. 以后重启服务，直接用：
+
+   ```bash
+   cd ~/images
+   bash termux_start.sh   # 同时拉起前后端
+   ```
+
+注意事项：
+
+- **验证码**：`EMAIL_MODE=console` 时注册/找回密码的验证码直接打印在后端终端/日志中，从那里抄取即可（无需配置邮箱）。
+- **注册依赖验证码**：Redis 未启动时注册接口会报错，请保持 `OTP_STORAGE_BACKEND=memory`（默认，无需 Redis）；若改用 `redis` 后端，需先 `redis-server --daemonize yes`。
+- **后台被杀**：手机熄屏后 Termux 进程可能被系统回收，需保持 Termux 前台运行，或用 `pkg install termux-api` + `termux-wake-lock` 保活。
+- **图片存储**：图片存在手机 Termux 内部目录 `backend/images/`（按日期分目录），注意备份，避免被清理工具误删。
+- **端口**：后端固定 8301（前端 Vite 代理硬编码指向它），`.env` 中 `APP_PORT` 与 `IMAGE_BASE_URL` 已默认对齐。
+
+如需自定义部署方式（如使用 Redis、真实邮箱），修改 `backend/.env` 中 `OTP_STORAGE_BACKEND` 和 `EMAIL_MODE` 两个开关即可，无需改代码。
 
 ## 开发说明
 
@@ -224,12 +270,17 @@ npm run build
    - 检查 `IMAGE_UPLOAD_DIR` 目录是否存在且有写入权限
    - 检查文件大小限制（默认无限制，可在代码中配置）
 
-2. **AI分析功能无法使用**
-   - 检查 `AI_API_KEY` 是否正确配置
-   - 检查网络连接是否正常
-   - 查看后端日志获取详细错误信息
+2. **图片加载 404**
+   - 开发模式（`npm run dev`）下图片走 `/images` 代理，`vite.config.js` 已配置代理到后端 8301；若改动过端口，请同步修改 `frontend/vite.config.js` 中的 proxy 和后端 `IMAGE_BASE_URL`
 
-3. **用户注册后无法登录**
+3. **AI分析功能无法使用**
+   - AI 调用是批量导入脚本 `backend/tests/import_images_with_ai.py` 中的功能，应用内无 AI 分析入口；如需使用请配置 `AI_API_KEY` 后运行该脚本
+
+4. **注册/登录失败**
+   - 检查 `EMAIL_MODE=console` 时验证码是否已在后端终端输出；改用 `smtp` 需先验证邮件服务器配置（QQ/163 邮箱需开启 SMTP 服务并获取授权码）
+   - 检查 Redis：使用 `OTP_STORAGE_BACKEND=redis` 时需确认 `redis-server` 已启动
+
+5. **用户注册后无法登录**
    - 检查邮件服务器配置是否正确
    - 检查Redis服务器是否正常运行
 
