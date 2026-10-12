@@ -1,15 +1,28 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-sqlalchemy==2.0.23
-pydantic==2.5.2
-pydantic-settings==2.1.0
-python-dotenv==1.0.0
-pillow==10.1.0
-python-multipart==0.0.6
+# 基础框架
+fastapi==0.143.0
+uvicorn==0.54.0
+
+# 数据校验
+pydantic==2.14.1
+pydantic-settings==2.15.0
+
+# 数据库
+sqlalchemy==2.1.4
 pymysql==1.1.0
-aiofiles==23.2.1
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-email-validator==2.0.0
+
+# 图片处理（Pillow 11.3+ 支持 Python 3.14）
+pillow==12.3.0
+
+# 工具
+python-dotenv==1.2.4
+python-multipart==0.0.32
+aiofiles==25.1.0
+email-validator==2.3.0
+requests==2.34.2
+
+# 认证（cryptography 46 / bcrypt 5 提供 Python 3.14 的 cp314/abi3 预编译轮子）
+python-jose[cryptography]==3.5.0
+bcrypt==5.0.0
+
+# Redis（可选：仅 OTP_STORAGE_BACKEND=redis 时使用）
 redis==5.0.1
-requests==2.31.0

@@ -56,6 +56,11 @@ fi
 # 2. 后端依赖
 cd "$(dirname "$0")/backend"
 echo ">>> [2/5] 安装后端 Python 依赖 ($PY)..."
+# Python 3.14 需 Pillow 11.3+，若 requirements.txt 里钉了旧版 Pillow，此处强制升级
+if "$PY" -c 'import sys; exit(0 if sys.version_info >= (3, 13) else 1)' 2>/dev/null; then
+  echo ">>> 检测到 Python >= 3.13，先升级 Pillow 以兼容"
+  "$PY" -m pip install --upgrade "Pillow>=11.3"
+fi
 "$PY" -m pip install -r requirements.txt
 
 # 3. 配置 .env

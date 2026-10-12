@@ -105,7 +105,7 @@ images_app/
    cd backend
    ```
 
-2. 安装依赖
+2. 安装依赖（Python 3.12 及以上；Python 3.13/3.14 会自动选择兼容版 Pillow 11.3+）
    ```bash
    pip install -r requirements.txt
    ```
@@ -193,6 +193,8 @@ Termux 无法运行 Docker，但本项目技术栈（FastAPI + SQLite + React）
    > ```
    >
    > 注意：自定义 Python 版本无法使用 Termux 预编译的 `python-pillow/python-cryptography/python-bcrypt` 包，脚本会自动改为通过 pip 现场编译（依赖已装 clang/rust 工具链），耗时较长，属正常现象。
+   >
+   > **Python 3.14 注意**：官方 `python` 包（3.14.x）与旧版 Pillow 10.1.0 不兼容（Pillow 10.x 只支持到 Python 3.12），`requirements.txt` 已升级为 Pillow 12.3.0（支持 3.9~3.14），脚本也会自动检测并先升级 Pillow 再装依赖。
 
 2. 另开一个终端启动前端：
 
