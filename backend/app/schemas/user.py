@@ -42,6 +42,7 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = Field(None, max_length=500)
     avatar_url: Optional[str] = Field(None, max_length=255)
+    is_public: Optional[bool] = None  # 图片共享开关
 
 # 密码修改Schema
 class PasswordChange(BaseModel):
@@ -53,6 +54,7 @@ class UserResponse(UserBase):
     id: int
     is_active: bool
     is_verified: bool
+    is_public: bool = True  # 图片共享开关
     created_at: datetime
     updated_at: Optional[datetime] = None
     avatar_url: Optional[str] = None

@@ -15,6 +15,8 @@ class User(Base):
     bio = Column(String(500), nullable=True)
     is_active = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
+    # 图片共享开关：True=允许他人查看我的图片，False=仅自己可见
+    is_public = Column(Boolean, default=True)
     verification_token = Column(String(255), nullable=True)
     password_reset_token = Column(String(255), nullable=True)
     # 注册验证码相关字段

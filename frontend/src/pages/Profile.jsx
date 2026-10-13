@@ -12,6 +12,8 @@ function Profile() {
   const [passwordData, setPasswordData] = useState({})
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('')
+  const [isPublic, setIsPublic] = useState(true) // 图片共享开关
+  const [sharingLoading, setSharingLoading] = useState(false) // 开关请求中
 
   // 加载用户资料
   const loadUserProfile = async () => {
@@ -23,6 +25,8 @@ function Profile() {
         bio: userData.bio || '',
         avatar_url: userData.avatar_url || ''
       })
+      // 共享开关初始值（后端默认True，兼容旧数据）
+      setIsPublic(userData.is_public !== false)
     } catch (error) {
       console.error('Failed to load user profile:', error)
     } finally {
@@ -34,6 +38,29 @@ function Profile() {
   useEffect(() => {
     loadUserProfile()
   }, [])
+
+  // 切换图片共享开关（立即生效，无需保存）
+  const handleToggleShare = async () => {
+    const newValue = !isPublic
+    setSharingLoading(true)
+    setMessage('')
+    try {
+      await updateUser({ is_public: newValue })
+      setIsPublic(newValue)
+      // 同步到AuthContext，保持全局一致
+      updateAuthUser({ ...user, is_public: newValue })
+      setMessage(newValue ? '已开启图片共享，您的图片将对所有人可见' : '已关闭图片共享，您的图片仅自己可见')
+      setMessageType('success')
+      setTimeout(() => setMessage(''), 3000)
+    } catch (error) {
+      console.error('Failed to toggle share:', error)
+      setMessage('切换失败，请稍后重试')
+      setMessageType('error')
+      setTimeout(() => setMessage(''), 3000)
+    } finally {
+      setSharingLoading(false)
+    }
+  }
 
   // 处理表单输入变化
   const handleInputChange = (e) => {
@@ -261,6 +288,33 @@ function Profile() {
             )}
           </div>
           
+          {/* 图片共享开关 */}
+          <div className="profile-section">
+            <div className="section-header">
+              <h3 className="section-title">图片共享</h3>
+            </div>
+            <div className="share-toggle-row">
+              <div className="share-toggle-info">
+                <div className="share-toggle-title">
+                  允许他人查看我的图片
+                </div>
+                <div className="share-toggle-desc">
+                  {isPublic
+                    ? '开启中：您的图片将展示在画廊主页，所有人可见'
+                    : '已关闭：您的图片仅自己可见，不会出现在画廊主页'}
+                </div>
+              </div>
+              <button
+                className={`toggle-switch ${isPublic ? 'on' : 'off'}`}
+                onClick={handleToggleShare}
+                disabled={sharingLoading}
+                title={isPublic ? '点击关闭图片共享' : '点击开启图片共享'}
+              >
+                <span className="toggle-slider"></span>
+              </button>
+            </div>
+          </div>
+
           {/* 密码修改 */}
           <div className="profile-section">
             <div className="section-header">
@@ -621,6 +675,78 @@ function Profile() {
           white-space: pre-line;
         }
         
+        /* 共享开关 */
+        .share-toggle-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
+        }
+
+        .share-toggle-info {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .share-toggle-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #ffffff;
+        }
+
+        .share-toggle-desc {
+          font-size: 14px;
+          color: #888888;
+          line-height: 1.5;
+        }
+
+        /* 开关按钮 */
+        .toggle-switch {
+          position: relative;
+          width: 64px;
+          height: 32px;
+          border-radius: 16px;
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          flex-shrink: 0;
+          padding: 0;
+        }
+
+        .toggle-switch.on {
+          background-color: #2ecc71;
+        }
+
+        .toggle-switch.off {
+          background-color: #555555;
+        }
+
+        .toggle-switch:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .toggle-slider {
+          position: absolute;
+          top: 4px;
+          left: 4px;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background-color: #ffffff;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+          transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.on .toggle-slider {
+          transform: translateX(32px);
+        }
+
+        .toggle-switch.off .toggle-slider {
+          transform: translateX(0);
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
           .profile-container {

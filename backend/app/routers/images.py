@@ -74,42 +74,29 @@ def get_image_url(image, is_thumbnail=True):
 @router.get("", response_model=List[ImageListResponse])  # 添加不带斜杠的路由版本
 async def get_images(skip: int = 0, limit: int = 100, search: str = None, db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_optional_current_user)):
     # 关联用户表，获取用户名 - 使用左连接确保所有图片都能返回
-    from sqlalchemy.orm import joinedload
     query = db.query(Image, User.username).outerjoin(User, Image.user_id == User.id)
-    
-    # 特殊用户配置
-    SPECIAL_USER_ID = 3
-    SPECIAL_USER_EMAIL = "admin@admin.com"
-    
-    # 权限控制逻辑
-    # 1. 首先获取用户信息，如果未登录则为None
-    user_id = getattr(current_user, 'id', None)
-    user_email = getattr(current_user, 'email', None)
 
-    # 记录权限检查日志
-    logger.debug(f"Image access request - User: {user_id}, Email: {user_email}")
-
-    # 判断是否为特殊用户
-    is_special_user = (user_id == SPECIAL_USER_ID) or (user_email == SPECIAL_USER_EMAIL)
-
-    if is_special_user:
-        # 特殊用户只能查看自己上传的图片
-        logger.debug(f"Applying special user filter: Image.user_id == {user_id}")
-        query = query.filter(Image.user_id == user_id)
+    # 共享开关权限控制：每个用户可通过个人中心的"图片共享"开关控制自己的图片是否公开
+    # 1. 未登录用户：只能看到 is_public=True 用户的图片
+    # 2. 已登录用户：能看到 is_public=True 用户的图片 + 自己上传的所有图片（无论开关）
+    if current_user is None:
+        logger.debug(f"Anonymous user - showing only public images (is_public=True)")
+        query = query.filter(User.is_public == True)  # noqa: E712
     else:
-        # 其他用户（包括未登录用户）无法查看特殊用户上传的图片
-        logger.debug(f"Applying regular user filter: Image.user_id != {SPECIAL_USER_ID}")
-        query = query.filter(Image.user_id != SPECIAL_USER_ID)
-    
+        logger.debug(f"User {current_user.id} - showing public images + own images")
+        query = query.filter(
+            (User.is_public == True) | (Image.user_id == current_user.id)  # noqa: E712
+        )
+
     # 添加搜索过滤
     if search:
         search_term = f"%{search}%"
         query = query.filter(
-            (Image.title.ilike(search_term)) | 
-            (Image.description.ilike(search_term)) | 
+            (Image.title.ilike(search_term)) |
+            (Image.description.ilike(search_term)) |
             (User.username.ilike(search_term))
         )
-    
+
     images = query.offset(skip).limit(limit).all()
     
     # 处理结果，添加URL和用户名
@@ -124,38 +111,20 @@ async def get_images(skip: int = 0, limit: int = 100, search: str = None, db: Se
 # 获取单个图片详情
 @router.get("/{image_id}", response_model=ImageResponse)
 async def get_image(image_id: int, db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_optional_current_user)):
-    # 关联用户表，获取用户名 - 使用左连接确保所有图片都能返回
-    result = db.query(Image, User.username).outerjoin(User, Image.user_id == User.id).filter(Image.id == image_id).first()
+    # 关联用户表，获取用户名和共享开关 - 使用左连接确保所有图片都能返回
+    result = db.query(Image, User.username, User.is_public).outerjoin(User, Image.user_id == User.id).filter(Image.id == image_id).first()
     if not result:
         raise HTTPException(status_code=404, detail="Image not found")
-    
-    image, username = result
-    
-    # 特殊用户配置
-    SPECIAL_USER_ID = 3
-    SPECIAL_USER_EMAIL = "admin@admin.com"
-    
-    # 权限控制逻辑
-    # 1. 首先获取用户信息，如果未登录则为None
-    user_id = getattr(current_user, 'id', None)
-    user_email = getattr(current_user, 'email', None)
 
-    # 记录权限检查日志
-    logger.debug(f"Image detail request - User: {user_id}, Image: {image_id}, Owner: {image.user_id}")
+    image, username, is_public = result
 
-    # 判断是否为特殊用户
-    is_special_user = (user_id == SPECIAL_USER_ID) or (user_email == SPECIAL_USER_EMAIL)
-
-    if is_special_user:
-        # 特殊用户只能查看自己上传的图片
-        if image.user_id != user_id:
-            logger.warning(f"Special user {user_id} denied access to image {image.id} owned by {image.user_id}")
-            raise HTTPException(status_code=403, detail="Not authorized to view this image")
-    else:
-        # 其他用户（包括未登录用户）无法查看特殊用户上传的图片
-        if image.user_id == SPECIAL_USER_ID:
-            logger.warning(f"User {user_id} denied access to special user's image {image.id}")
-            raise HTTPException(status_code=404, detail="Image not found")
+    # 共享开关权限控制：
+    # - 图片主人（当前登录用户 == 图片user_id）：永远可看
+    # - 其他人/未登录：仅当图片主人 is_public=True 时可看
+    viewer_id = getattr(current_user, 'id', None)
+    if viewer_id != image.user_id and not is_public:
+        logger.warning(f"User {viewer_id} denied access to non-public image {image.id} owned by {image.user_id}")
+        raise HTTPException(status_code=404, detail="Image not found")
     
     # 添加图片URL和用户名 - 详情页返回原图URL
     image.url = get_image_url(image, is_thumbnail=False)
