@@ -34,7 +34,7 @@
 - ✅ 用户专属空间
   - 我的图片：查看和管理个人上传的所有图片
   - 个人资料：查看和编辑用户信息、头像
-  - 隐私保护：特定用户（id=3）上传的图片为私密图像，仅该用户自己可见，其他用户无法查看
+  - 图片共享开关：每个用户可在个人中心自由开关"图片共享"。开启时图片展示在主页（所有人可见）；关闭时图片仅自己可见，不会出现在主页，其他用户无法查看
 
 ## 目录结构
 
@@ -163,6 +163,7 @@ images_app/
 | SMTP_PORT | 邮件服务器端口 | 465 |
 | SMTP_USERNAME / SMTP_PASSWORD / EMAIL_FROM | 发件邮箱及授权码 | 空 |
 | EMAIL_MODE | 邮件发送后端：`smtp`=真实发送；`console`=验证码输出到后端日志（无需邮箱） | console |
+| EMAIL_FROM_NAME | 发件人显示名（可选，支持中文，如"视觉画廊"） | 空 |
 | REDIS_HOST | Redis主机（仅 `OTP_STORAGE_BACKEND=redis` 时需要） | localhost |
 | REDIS_PORT | Redis端口 | 6379 |
 | OTP_STORAGE_BACKEND | 验证码存储后端：`memory`=纯Python内存（不依赖Redis，重启丢失）；`redis`=使用Redis | memory |
@@ -209,9 +210,11 @@ Termux 无法运行 Docker，但本项目技术栈（FastAPI + SQLite + React）
 
    ```bash
    cd ~/images
-   bash termux_start.sh   # 同时拉起前后端（Python 命令默认 python）
-   # 若部署时指定了其他 Python 版本：PY=python311 bash termux_start.sh
+   bash start.sh   # 后台启动前后端（已在运行会提示，先 stop 再 start）
+   bash stop.sh    # 停止前后端
    ```
+
+> **注意**：部署完成后，项目根目录下应有 `start.sh`（后台启动）和 `stop.sh`（停止）两个脚本。若通过 git 拉取最新代码后没有这两个文件，先执行 `git pull origin master` 拉取最新版本（脚本由仓库管理）。
 
 注意事项：
 
@@ -289,12 +292,21 @@ npm run build
    - AI 调用是批量导入脚本 `backend/tests/import_images_with_ai.py` 中的功能，应用内无 AI 分析入口；如需使用请配置 `AI_API_KEY` 后运行该脚本
 
 4. **注册/登录失败**
-   - 检查 `EMAIL_MODE=console` 时验证码是否已在后端终端输出；改用 `smtp` 需先验证邮件服务器配置（QQ/163 邮箱需开启 SMTP 服务并获取授权码）
+   - 检查 `EMAIL_MODE=console` 时验证码是否已在后端终端输出；改用 `smtp` 需先验证邮件服务器配置（QQ/163 邮箱需开启 SMTP 服务并获取授权码，`SMTP_PASSWORD` 填授权码而非登录密码）
+   - QQ 邮箱 465 端口 SSL 直连在某些网络环境会报 `SSL: WRONG_VERSION_NUMBER`，可改用 587 端口（`SMTP_PORT=587`，代码自动走 STARTTLS）
    - 检查 Redis：使用 `OTP_STORAGE_BACKEND=redis` 时需确认 `redis-server` 已启动
 
 5. **用户注册后无法登录**
    - 检查邮件服务器配置是否正确
    - 检查Redis服务器是否正常运行
+
+6. **注册/图片相关报错与数据库迁移有关**
+   - 若数据库是用 pandas 脚本从 MySQL 迁移而来，`users`/`images` 表可能缺少自增主键、默认值等约束，导致注册报 `NULL identity key`、`created_at` 校验失败等
+   - 修复：运行 `backend/add_user_id_column.py`（历史迁移脚本）或按模型重建表；`users` 表还需 `is_public` 列，运行 `backend/add_is_public_column.py`（幂等，可重复执行）
+
+7. **图片共享开关**
+   - 个人中心可开关图片共享；关闭后图片仅自己可见（`is_public=False`），未登录/其他用户无法看到
+   - 老库升级需先执行 `backend/add_is_public_column.py` 添加 `is_public` 列，否则列表查询报错
 
 ## 许可证
 
