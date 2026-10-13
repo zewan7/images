@@ -6,8 +6,14 @@ services:
     image: my-backend:v1
     ports:
       - "8301:8301"
+    environment:
+      # 时区：Docker容器默认UTC，不设置上传时间会差8小时
+      - TZ=Asia/Shanghai
     volumes:
       - ./backend:/app
+      # 数据持久化：数据库和上传的图片不随容器销毁
+      - ./backend/images.db:/app/images.db
+      - ./backend/images:/app/images
     networks:
       - app-network
 
@@ -16,8 +22,6 @@ services:
     image: my-frontend:v1
     ports:
       - "8300:8300"
-    volumes:
-      - ./frontend/dist:/usr/share/nginx/html  # 挂载构建产物
     depends_on:
       - backend
     networks:

@@ -96,6 +96,12 @@ images_app/
    - 后端API：http://localhost:8301
    - API文档：http://localhost:8301/docs
 
+> **Docker 部署说明**：
+> - 数据库（`backend/images.db`）和上传的图片（`backend/images/`）已通过卷持久化，容器重建/删除不丢数据
+> - 容器时区已设为 `Asia/Shanghai`，上传时间与本地一致
+> - 前端使用多阶段构建产物，无需在宿主机执行 `npm run build`
+> - 注意：如果本机已有旧的 `backend/images.db` / `backend/images/` 目录，挂载卷会使用宿主机数据（保持一致）；首次部署为空则自动创建
+
 ### 方法二：手动运行
 
 #### 后端运行

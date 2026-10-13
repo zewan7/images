@@ -20,5 +20,5 @@ EXPOSE 8301
 # 设置环境变量
 ENV PYTHONPATH=/app
 
-# 启动命令
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8301", "--reload"]
+# 启动命令（生产环境不使用 --reload）
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8301"]
