@@ -242,7 +242,7 @@ def change_password(password_change: PasswordChange, db: Session = Depends(get_d
 @router.post("/reset-password/otp")
 def request_reset_password_otp(reset_request: PasswordResetRequest, db: Session = Depends(get_db)):
     """请求密码重置验证码"""
-    from app.utils.email import send_registration_otp
+    from app.utils.email import send_password_reset_otp
     from app.utils.auth import generate_otp
     from app.utils.redis import set_otp
     
@@ -258,7 +258,7 @@ def request_reset_password_otp(reset_request: PasswordResetRequest, db: Session 
     set_otp(user.email, otp, expires_in=300)
     
     # 发送验证码邮件
-    send_registration_otp(user.email, otp)
+    send_password_reset_otp(user.email, otp)
     
     return {"message": "验证码已发送到您的邮箱，有效期5分钟"}
 

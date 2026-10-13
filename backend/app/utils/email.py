@@ -98,6 +98,23 @@ def send_password_reset_email(to_email, reset_token):
     
     return send_email(to_email, subject, body)
 
+# 发送密码重置验证码邮件（验证码方式，非链接方式）
+def send_password_reset_otp(to_email, otp):
+    subject = "视觉画廊密码重置验证码"
+    body = f"""
+    <html>
+      <body>
+        <h2>密码重置请求</h2>
+        <p>您正在重置视觉画廊账号的密码，您的验证码是：</p>
+        <p style="font-size: 24px; font-weight: bold; color: #4a90e2; letter-spacing: 3px;">{otp}</p>
+        <p>验证码有效期为5分钟，请尽快完成重置。</p>
+        <p>如果您没有请求重置密码，请忽略此邮件。</p>
+      </body>
+    </html>
+    """
+
+    return send_email(to_email, subject, body)
+
 # 发送注册验证码邮件
 def send_registration_otp(to_email, otp):
     subject = "视觉画廊注册验证码"
