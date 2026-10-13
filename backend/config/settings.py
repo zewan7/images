@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     SMTP_USERNAME: str = ""
     SMTP_PASSWORD: str = ""
     EMAIL_FROM: str = ""
+    EMAIL_FROM_NAME: str = ""  # 发件人显示名（可选，支持中文），如"视觉画廊"
 
     # 验证码存储后端：redis=使用Redis，memory=使用纯Python内存存储（不依赖Redis）
     OTP_STORAGE_BACKEND: str = "memory"

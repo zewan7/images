@@ -2,6 +2,7 @@ import logging
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.utils import formataddr
 from config.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,14 @@ def send_email(to_email, subject, body):
     try:
         # 创建邮件
         msg = MIMEMultipart()
-        msg['From'] = settings.EMAIL_FROM
+        # From 头：优先用 EMAIL_FROM_NAME(中文显示名) + SMTP_USERNAME 组合，确保符合 RFC5322
+        if settings.EMAIL_FROM_NAME:
+            msg['From'] = formataddr((settings.EMAIL_FROM_NAME, settings.SMTP_USERNAME))
+        elif settings.EMAIL_FROM and '<' in settings.EMAIL_FROM:
+            # 兼容 "显示名 <邮箱>" 格式
+            msg['From'] = settings.EMAIL_FROM
+        else:
+            msg['From'] = formataddr((settings.EMAIL_FROM, settings.SMTP_USERNAME)) if settings.EMAIL_FROM else settings.SMTP_USERNAME
         msg['To'] = to_email
         msg['Subject'] = subject
 
