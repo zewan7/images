@@ -22,7 +22,7 @@ AI_MODEL = settings.AI_MODEL
 AI_API_KEY = settings.AI_API_KEY
 THUMBNAIL_SIZE = settings.thumbnail_size_tuple
 THUMBNAIL_QUALITY = settings.THUMBNAIL_QUALITY
-DEFAULT_USER_ID = 3
+DEFAULT_USER_ID = 4
 MAX_SIZE = 768       # 最长边限制（768对大多数场景足够，如果想更省Token可改512）
 JPEG_QUALITY = 85    # 压缩质量（85是清晰度和体积的绝佳平衡）
 
