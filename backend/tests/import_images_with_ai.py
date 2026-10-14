@@ -14,6 +14,7 @@ from app.models.user import User
 from app.models.image import Image as DBImage
 from app.database import SessionLocal
 from config.settings import settings
+from io import BytesIO
 
 # 从配置文件中读取AI配置
 AI_API_URL = settings.AI_API_URL
@@ -22,11 +23,35 @@ AI_API_KEY = settings.AI_API_KEY
 THUMBNAIL_SIZE = settings.thumbnail_size_tuple
 THUMBNAIL_QUALITY = settings.THUMBNAIL_QUALITY
 DEFAULT_USER_ID = 3
+MAX_SIZE = 768       # 最长边限制（768对大多数场景足够，如果想更省Token可改512）
+JPEG_QUALITY = 85    # 压缩质量（85是清晰度和体积的绝佳平衡）
 
 # 将图片转换为base64格式，用于AI API调用
 def image_to_base64(image_path):
-    with open(image_path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode('utf-8')
+    try:
+        with Image.open(image_path) as img:
+            # 转换为 RGB 模式（防止 PNG 的透明通道导致保存 JPEG 报错）
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+
+            # 等比缩放
+            img.thumbnail((MAX_SIZE, MAX_SIZE), Image.Resampling.LANCZOS)
+
+            # 保存到内存中的字节流
+            buffer = BytesIO()
+            img.save(buffer, format="JPEG", quality=JPEG_QUALITY)
+
+            # 提取压缩后的字节
+            compressed_bytes = buffer.getvalue()
+            print(f"✅ 原图已压缩，压缩后大小: {len(compressed_bytes) / 1024:.2f} KB")
+
+            # 转 Base64
+            base64_str = base64.b64encode(compressed_bytes).decode("utf-8")
+            return base64_str
+
+    except Exception as e:
+        print(f"图片处理失败: {e}")
+        exit()
 
 # 调用AI API生成标题和描述
 def generate_ai_content(image_path):

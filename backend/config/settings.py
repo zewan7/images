@@ -60,7 +60,7 @@ class Settings(BaseSettings):
     EMAIL_MODE: str = "console"
     
     # AI配置
-    AI_API_URL: str = "https://api.siliconflow.cn/v1/chat/completions"
+    AI_API_URL: str = "http://127.0.0.1:8080/v1/chat/completions"
     AI_MODEL: str = "Qwen/Qwen2.5-VL-72B-Instruct"
     AI_API_KEY: str = ""
     THUMBNAIL_SIZE: str = "500,500"
