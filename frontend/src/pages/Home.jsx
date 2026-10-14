@@ -151,16 +151,31 @@ function Home() {
   
   // 滚动监听，控制返回顶部按钮显示和加载更多
   useEffect(() => {
+    // WebView兼容的滚动位置获取：优先window，回退documentElement/body
+    const getScrollInfo = () => {
+      const doc = document.documentElement || document.body
+      return {
+        scrollTop: window.scrollY || doc.scrollTop || 0,
+        scrollHeight: doc.scrollHeight || document.body.scrollHeight || 0,
+        clientHeight: window.innerHeight || doc.clientHeight || 0
+      }
+    }
+
     const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300)
-      
-      // 检测是否滚动到底部，触发加载更多
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 && hasMore && !loadMoreLoading && !loading) {
+      const { scrollTop, scrollHeight, clientHeight } = getScrollInfo()
+      setShowScrollTop(scrollTop > 300)
+
+      // 检测是否滚动到底部，触发加载更多（兼容WebView容器滚动）
+      if (scrollTop + clientHeight >= scrollHeight - 200 && hasMore && !loadMoreLoading && !loading) {
         loadImages(searchTerm, true)
       }
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    document.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      document.removeEventListener('scroll', handleScroll)
+    }
   }, [hasMore, loadMoreLoading, loading, searchTerm])
   
   // 返回顶部函数
