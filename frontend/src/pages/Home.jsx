@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import ImageCard from '../components/ImageCard.jsx'
@@ -21,30 +21,45 @@ function Home() {
   const [skip, setSkip] = useState(0) // 当前跳过的图片数量
   const [limit] = useState(40) // 每次加载的图片数量
 
+  // skipRef: 始终保存最新的 skip 值，避免滚动快速连续触发时闭包读到旧值导致重复加载同一批
+  const skipRef = useRef(0)
+
   // 加载图片列表，支持分页和搜索
   const loadImages = async (search = '', isLoadMore = false) => {
     try {
-      const currentSkip = isLoadMore ? skip : 0
-      
+      const currentSkip = isLoadMore ? skipRef.current : 0
+
       if (isLoadMore) {
         setLoadMoreLoading(true)
       } else {
         setLoading(true)
         // 非加载更多时，从0开始加载，重置所有状态
+        skipRef.current = 0
         setSkip(0)
       }
-      
+
       // 所有请求都强制刷新缓存，确保获取最新数据
       const data = await fetchImages(currentSkip, limit, search, { forceRefresh: true })
-      
+
       if (isLoadMore) {
-        setImages(prevImages => [...prevImages, ...data])
-        setAllImages(prevAllImages => [...prevAllImages, ...data])
-        setSkip(prevSkip => prevSkip + limit)
+        // 去重：合并前过滤掉已存在的 filename，避免重复图片出现
+        setImages(prevImages => {
+          const seen = new Set(prevImages.map(img => img.filename))
+          const newOnes = data.filter(img => !seen.has(img.filename))
+          return [...prevImages, ...newOnes]
+        })
+        setAllImages(prevAllImages => {
+          const seen = new Set(prevAllImages.map(img => img.filename))
+          const newOnes = data.filter(img => !seen.has(img.filename))
+          return [...prevAllImages, ...newOnes]
+        })
+        skipRef.current += limit
+        setSkip(skipRef.current)
         setHasMore(data.length === limit)
       } else {
         setImages(data)
         setAllImages(data)
+        skipRef.current = limit
         setSkip(limit)
         setHasMore(data.length === limit)
       }
